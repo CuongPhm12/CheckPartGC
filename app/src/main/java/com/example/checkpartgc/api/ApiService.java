@@ -32,6 +32,17 @@ public interface ApiService {
                                      @Query("part_no") String part_no,
                                      @Query("issue_no") String issue_no);
 
+    //API for Usap CheckIssueNoExist
+    //http://172.28.10.17:5003/Usap/CheckIssueNoExist?issue_no=0091716016
+    ApiService apiService_verNew_1 = new Retrofit.Builder()
+            .baseUrl("http://172.28.10.17:5003/")
+            .addConverterFactory(GsonConverterFactory.create(gson))
+            .build()
+            .create(ApiService.class);
+
+    @GET("Usap/CheckIssueNoExist")
+    Call<ApiResponse> CheckIssueNoExist (@Query("issue_no") String issue_no);
+
     //API for PDA_GA_Service
     //http://172.28.10.17:5005/Service/PDA_GA_Service.asmx/PdaGetPartGC?modelId=FM1-X946-000SS01&partNo=WB8-5234-000
     ApiService pdaService = new Retrofit.Builder()
