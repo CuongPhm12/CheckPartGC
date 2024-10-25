@@ -1,22 +1,15 @@
 package com.example.checkpartgc.model;
 
+import java.util.List;
+
 public class ApiResponse {
-    private boolean status;
-    private boolean result;
+    private List<PartItem> result;
 
-    public boolean isStatus() {
-        return status;
-    }
-
-    public void setStatus(boolean status) {
-        this.status = status;
-    }
-
-    public boolean isResult() {
+    public List<PartItem> getResult() {
         return result;
     }
 
-    public void setResult(boolean result) {
+    public void setResult(List<PartItem> result) {
         this.result = result;
     }
 }

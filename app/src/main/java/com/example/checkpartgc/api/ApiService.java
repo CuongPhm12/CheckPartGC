@@ -21,27 +21,39 @@ public interface ApiService {
 
     //API for Usap CheckPartExist
     //172.28.10.17:5003/Usap/CheckPartExist?wh_code=BR11&part_no=YG1002090&issue_no=0091716016
-    ApiService apiService = new Retrofit.Builder()
-            .baseUrl("http://172.28.10.17:5003/")
-            .addConverterFactory(GsonConverterFactory.create(gson))
-            .build()
-            .create(ApiService.class);
-
-    @GET("Usap/CheckPartExist")
-    Call<ApiResponse> checkPartExist(@Query("wh_code") String wh_code,
-                                     @Query("part_no") String part_no,
-                                     @Query("issue_no") String issue_no);
+//    ApiService apiService = new Retrofit.Builder()
+//            .baseUrl("http://172.28.10.17:5003/")
+//            .addConverterFactory(GsonConverterFactory.create(gson))
+//            .build()
+//            .create(ApiService.class);
+//
+//    @GET("Usap/CheckPartExist")
+//    Call<ApiResponse> checkPartExist(@Query("wh_code") String wh_code,
+//                                     @Query("part_no") String part_no,
+//                                     @Query("issue_no") String issue_no);
 
     //API for Usap CheckIssueNoExist
     //http://172.28.10.17:5003/Usap/CheckIssueNoExist?issue_no=0091716016
-    ApiService apiService_verNew_1 = new Retrofit.Builder()
-            .baseUrl("http://172.28.10.17:5003/")
+//    ApiService apiService_verNew_1 = new Retrofit.Builder()
+//            .baseUrl("http://172.28.10.17:5003/")
+//            .addConverterFactory(GsonConverterFactory.create(gson))
+//            .build()
+//            .create(ApiService.class);
+//
+//    @GET("Usap/CheckIssueNoExist")
+//    Call<ApiResponse> CheckIssueNoExist (@Query("issue_no") String issue_no);
+
+    //API for Usap CheckIssueNoExist
+    //http://172.28.10.17:9998/Usap/GetPartByIssueNo?issueNo=0188583293
+    ApiService apiService_GetPartByIssueNo = new Retrofit.Builder()
+            .baseUrl("http://172.28.10.17:9998/")
             .addConverterFactory(GsonConverterFactory.create(gson))
             .build()
             .create(ApiService.class);
 
-    @GET("Usap/CheckIssueNoExist")
-    Call<ApiResponse> CheckIssueNoExist (@Query("issue_no") String issue_no);
+    @GET("Usap/GetPartByIssueNo")
+    Call<List<String>> GetPartByIssueNo (@Query("issueNo") String issueNo);
+
 
     //API for PDA_GA_Service
     //http://172.28.10.17:5005/Service/PDA_GA_Service.asmx/PdaGetPartGC?modelId=FM1-X946-000SS01&partNo=WB8-5234-000
