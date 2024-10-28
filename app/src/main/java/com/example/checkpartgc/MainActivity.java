@@ -20,10 +20,12 @@ import com.example.checkpartgc.api.ApiService;
 import com.example.checkpartgc.model.ApiResponse;
 import com.example.checkpartgc.model.MI_Master;
 import com.example.checkpartgc.model.PartItem;
+import com.example.checkpartgc.model.PdaInsertHistoryResponse;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -104,8 +106,8 @@ public class MainActivity extends AppCompatActivity {
                     ApiService.apiService_GetPartByIssueNo.GetPartByIssueNo(issueNo).enqueue(new Callback<List<String>>() {
                         @Override
                         public void onResponse(Call<List<String>> call, Response<List<String>> response) {
-                            progressDialog.dismiss();// Dismiss the dialog once we have a response
 
+                            progressDialog.dismiss();
                             if (response.isSuccessful() && response.body() != null) {
                                 partItemList = response.body();
                                 if (!partItemList.isEmpty()) {
@@ -141,6 +143,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                     });
 
+
                 }
                 return false;
             }
@@ -152,13 +155,13 @@ public class MainActivity extends AppCompatActivity {
                 if (keyEvent != null && (keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER) || i == EditorInfo.IME_ACTION_DONE) {
                     // Get values from input fields
                     String partNo = edtPart.getText().toString();
-                    String issueNo = edtIssueNo.getText().toString();
+                    String issueNo = "0" + edtIssueNo.getText().toString();
                     String model = edtModel.getText().toString();
 
                     if (validateInput(partNo, issueNo, model)) {
                         // Show a progress dialog
                         ProgressDialog progressDialog = ProgressDialog.show(MainActivity.this, "Please Wait", "Fetching part details...", true);
-                        ApiService.pdaService.pdaGetPartGC(model, partNo).enqueue(new Callback<List<MI_Master>>() {
+                        ApiService.pdaService.pdaGetPartGC(model, partNo,issueNo).enqueue(new Callback<List<MI_Master>>() {
                             @Override
                             public void onResponse(Call<List<MI_Master>> call, Response<List<MI_Master>> response) {
                                 progressDialog.dismiss(); // Dismiss the dialog once we have a response
@@ -169,10 +172,11 @@ public class MainActivity extends AppCompatActivity {
                                     txtResult.setText("OK");
 
                                     MI_Master mi_Master = mi_Masters.get(0);
+
                                     txtSTT.setText(mi_Master.getMI_INDEX());
                                     txtViTriCam.setText(mi_Master.getLOCATION_ID());
                                     txtQuyCach.setText(mi_Master.getSPEC());
-
+                                    txtCount.setText(String.valueOf( mi_Master.getCOUNTOFCHECK()));
                                     speakResult();
                                     edtPart.setText("");
                                     edtPart.requestFocus();
@@ -216,51 +220,56 @@ public class MainActivity extends AppCompatActivity {
                     // Get values from input fields
                     String issueNo = "0" + edtIssueNo.getText().toString();
                     String model = edtModel.getText().toString();
-                    for(int j = 0; i<partItemList.size();j++){
+
+                    ProgressDialog progressDialog = ProgressDialog.show(MainActivity.this, "Please Wait", "Insert Issue No...", true);
+                    // Track completed API calls
+                    final int totalRequests = partItemList.size();
+                    final AtomicInteger completedRequests = new AtomicInteger(0);
+                    for(int j = 0; j<partItemList.size();j++){
                         String partNo = partItemList.get(j).toString();
-                        
+
+
+                        ApiService.pdaService.pdaInsertHistory(model,partNo,issueNo).enqueue(new Callback<PdaInsertHistoryResponse>() {
+                            @Override
+                            public void onResponse(Call<PdaInsertHistoryResponse > call, Response<PdaInsertHistoryResponse > response) {
+                                progressDialog.dismiss();
+
+                                if (response.isSuccessful() && response.body() != null) {
+                                    String pStatus = response.body().getpStatus();
+
+                                    if ("OK".equals(pStatus) || "ER_DUPLICATE".equals(pStatus)) {
+                                        // Save log or show success message
+                                        Log.e("InsertHistory", "Status: " + pStatus);
+                                    } else if ("ER".equals(pStatus)) {
+                                        // Show error message and focus on edtModel
+                                        Toast.makeText(MainActivity.this, "Error: Insertion failed", Toast.LENGTH_SHORT).show();
+                                        edtModel.requestFocus();
+                                    }
+                                } else {
+                                    Toast.makeText(MainActivity.this, "Error: Invalid response from server", Toast.LENGTH_SHORT).show();
+                                }
+                                // Increment and check if all requests are complete
+                                if (completedRequests.incrementAndGet() == totalRequests) {
+                                    progressDialog.dismiss();
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(Call<PdaInsertHistoryResponse > call, Throwable t) {
+//                                progressDialog.dismiss();
+                                Log.e("API call failed", "Status: " + t.getMessage());
+                                Toast.makeText(MainActivity.this, "API call failed: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                                edtModel.requestFocus();
+
+                                // Increment and check if all requests are complete
+                                if (completedRequests.incrementAndGet() == totalRequests) {
+                                    progressDialog.dismiss();
+                                }
+                            }
+                        });
+
                     }
 
-                    ProgressDialog progressDialog = ProgressDialog.show(MainActivity.this, "Please Wait", "Checking Issue No...", true);
-                    ApiService.apiService_GetPartByIssueNo.GetPartByIssueNo(issueNo).enqueue(new Callback<List<String>>() {
-                        @Override
-                        public void onResponse(Call<List<String>> call, Response<List<String>> response) {
-                            progressDialog.dismiss();// Dismiss the dialog once we have a response
-
-                            if (response.isSuccessful() && response.body() != null) {
-                                List<String> partItemList = response.body();
-                                if (!partItemList.isEmpty()) {
-                                    txtTotal.setText("/"+String.valueOf(partItemList.size()));
-                                } else {
-                                    Toast.makeText(MainActivity.this, "Issue No Not Found", Toast.LENGTH_SHORT).show();
-                                    txtTotal.setText("0");
-                                    edtIssueNo.requestFocus();
-
-                                }
-                            } else {
-                                // Extract detailed error message for debugging
-                                String errorMessage = "No error message";
-                                try {
-                                    if (response.errorBody() != null) {
-                                        errorMessage = response.errorBody().string(); // Read the error message from response
-                                    }
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                }
-
-                                Log.e("API_ERROR", "Response failed. Status code: " + response.code() + ", Error: " + errorMessage);
-                                Toast.makeText(MainActivity.this, "Error: Invalid response. Status code: " + response.code(), Toast.LENGTH_SHORT).show();
-                            }
-                        }
-
-                        @Override
-                        public void onFailure(Call<List<String>> call, Throwable t) {
-                            progressDialog.dismiss(); // Dismiss the dialog in case of failure
-                            // Log the error message for debugging
-                            Log.e("API_ERROR", "API Call Failed: ", t);
-                            Toast.makeText(MainActivity.this, "Call API Failed: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-                        }
-                    });
 
                 }
                 return false;
@@ -278,6 +287,9 @@ public class MainActivity extends AppCompatActivity {
                 txtSTT.setText("");
                 txtViTriCam.setText("");
                 txtQuyCach.setText("");
+
+                txtCount.setText("0");
+                txtTotal.setText("/0");
 
                 edtIssueNo.requestFocus();
             }

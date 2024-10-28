@@ -4,12 +4,23 @@ public class MI_Master {
     private String MI_INDEX;
     private  String LOCATION_ID;
     private String SPEC;
+    private int countOfCheck;
 
-    public MI_Master(String MI_INDEX, String LOCATION_ID, String SPEC) {
+    public MI_Master(String MI_INDEX, String LOCATION_ID, String SPEC, int COUNTOFCHECK) {
         this.MI_INDEX = MI_INDEX;
         this.LOCATION_ID = LOCATION_ID;
         this.SPEC = SPEC;
+        this.countOfCheck = COUNTOFCHECK;
     }
+
+    public int getCOUNTOFCHECK() {
+        return countOfCheck;
+    }
+
+    public void setCOUNTOFCHECK(int COUNTOFCHECK) {
+        this.countOfCheck = COUNTOFCHECK;
+    }
+
 
     public String getMI_INDEX() {
         return MI_INDEX;
