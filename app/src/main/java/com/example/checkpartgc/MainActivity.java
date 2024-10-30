@@ -99,8 +99,8 @@ public class MainActivity extends AppCompatActivity {
                 if (keyEvent != null && (keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER) || i == EditorInfo.IME_ACTION_DONE) {
                     // Get values from input fields
                     String issueNo = "0" + edtIssueNo.getText().toString();
-                    if (issueNo.length() >= 3 && !issueNo.substring(0, 3).equals("018")){
-                        return false;}
+//                    if (issueNo.length() >= 3 && !issueNo.substring(0, 3).equals("018")){
+//                        return false;}
 
                     ProgressDialog progressDialog = ProgressDialog.show(MainActivity.this, "Please Wait", "Checking Issue No...", true);
                     ApiService.apiService_GetPartByIssueNo.GetPartByIssueNo(issueNo).enqueue(new Callback<List<String>>() {
@@ -114,7 +114,7 @@ public class MainActivity extends AppCompatActivity {
                                     txtTotal.setText("/"+String.valueOf(partItemList.size()));
                                 } else {
                                     Toast.makeText(MainActivity.this, "Issue No Not Found", Toast.LENGTH_SHORT).show();
-                                    txtTotal.setText("0");
+                                    txtTotal.setText("/0");
                                     edtIssueNo.requestFocus();
 
                                 }
@@ -222,9 +222,7 @@ public class MainActivity extends AppCompatActivity {
                     String model = edtModel.getText().toString();
 
                     ProgressDialog progressDialog = ProgressDialog.show(MainActivity.this, "Please Wait", "Insert Issue No...", true);
-                    // Track completed API calls
-                    final int totalRequests = partItemList.size();
-                    final AtomicInteger completedRequests = new AtomicInteger(0);
+
                     for(int j = 0; j<partItemList.size();j++){
                         String partNo = partItemList.get(j).toString();
 
@@ -243,15 +241,15 @@ public class MainActivity extends AppCompatActivity {
                                     } else if ("ER".equals(pStatus)) {
                                         // Show error message and focus on edtModel
                                         Toast.makeText(MainActivity.this, "Error: Insertion failed", Toast.LENGTH_SHORT).show();
+                                        edtModel.setError("Insert Fail " + partNo  + "at position ");
                                         edtModel.requestFocus();
                                     }
                                 } else {
                                     Toast.makeText(MainActivity.this, "Error: Invalid response from server", Toast.LENGTH_SHORT).show();
+                                    edtModel.setError("Invalid response from server");
+                                    edtModel.requestFocus();
                                 }
-                                // Increment and check if all requests are complete
-                                if (completedRequests.incrementAndGet() == totalRequests) {
-                                    progressDialog.dismiss();
-                                }
+
                             }
 
                             @Override
@@ -259,17 +257,12 @@ public class MainActivity extends AppCompatActivity {
 //                                progressDialog.dismiss();
                                 Log.e("API call failed", "Status: " + t.getMessage());
                                 Toast.makeText(MainActivity.this, "API call failed: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                                edtModel.setError("API call failed");
                                 edtModel.requestFocus();
 
-                                // Increment and check if all requests are complete
-                                if (completedRequests.incrementAndGet() == totalRequests) {
-                                    progressDialog.dismiss();
-                                }
                             }
                         });
-
                     }
-
 
                 }
                 return false;
