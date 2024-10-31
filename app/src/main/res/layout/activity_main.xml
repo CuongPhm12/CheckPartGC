@@ -12,10 +12,10 @@
         android:id="@+id/textView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#F0FF7700"
+        android:background="#FF9240"
         android:text="Check Part GC"
         android:textAlignment="center"
-        android:textColor="@color/white"
+        android:textColor="#FFFFA9"
         android:textSize="34sp" />
 
 
@@ -229,28 +229,42 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:weightSum="2">
+        android:orientation="horizontal"
+        android:gravity="center">
+
 
         <Button
             android:id="@+id/btnReset"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="30dp"
-            android:layout_marginRight="30dp"
+
             android:layout_weight="1"
-            android:backgroundTint="#EB018ABD"
+            android:backgroundTint="#68D69D"
             android:text="Reset"
+            android:textColor="#401D83"
+            android:textSize="18sp" />
+
+        <Button
+            android:id="@+id/btnShow"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_weight="1"
+            android:backgroundTint="#FFD154"
+            android:text="Show"
+            android:textColor="#002795"
             android:textSize="18sp" />
 
         <Button
             android:id="@+id/btnExit"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="30dp"
-            android:layout_marginRight="30dp"
+
+            android:layout_marginStart="20dp"
             android:layout_weight="1"
-            android:backgroundTint="#EB018ABD"
+            android:backgroundTint="#D9D9D9"
             android:text="Exit"
+            android:textColor="#C20000"
             android:textSize="18sp" />
 
     </LinearLayout>

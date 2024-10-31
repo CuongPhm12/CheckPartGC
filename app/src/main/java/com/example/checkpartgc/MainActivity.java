@@ -1,6 +1,9 @@
 package com.example.checkpartgc;
 
+import static com.example.checkpartgc.api.ApiService.gson;
+
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.util.Log;
@@ -23,6 +26,7 @@ import com.example.checkpartgc.model.PartItem;
 import com.example.checkpartgc.model.PdaInsertHistoryResponse;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -34,8 +38,8 @@ import retrofit2.Response;
 public class MainActivity extends AppCompatActivity {
 
     EditText edtIssueNo, edtWO, edtModel, edtPart;
-    TextView txtSTT, txtViTriCam, txtQuyCach, txtResult,txtCount, txtTotal;
-    Button btnReset, btnExit, btnGenerateSpeech;
+    TextView txtSTT, txtViTriCam, txtQuyCach, txtResult, txtCount, txtTotal;
+    Button btnReset, btnExit, btnGenerateSpeech, btnShow;
     ApiService apiService;
     TextToSpeech t1;
     private boolean isTtsReady = false;  // Flag to check if TTS is ready
@@ -62,6 +66,7 @@ public class MainActivity extends AppCompatActivity {
 
         btnReset = findViewById(R.id.btnReset);
         btnExit = findViewById(R.id.btnExit);
+        btnShow = findViewById(R.id.btnShow);
 
 
         t1 = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
@@ -111,7 +116,7 @@ public class MainActivity extends AppCompatActivity {
                             if (response.isSuccessful() && response.body() != null) {
                                 partItemList = response.body();
                                 if (!partItemList.isEmpty()) {
-                                    txtTotal.setText("/"+String.valueOf(partItemList.size()));
+                                    txtTotal.setText("/" + String.valueOf(partItemList.size()));
                                 } else {
                                     Toast.makeText(MainActivity.this, "Issue No Not Found", Toast.LENGTH_SHORT).show();
                                     txtTotal.setText("/0");
@@ -161,7 +166,7 @@ public class MainActivity extends AppCompatActivity {
                     if (validateInput(partNo, issueNo, model)) {
                         // Show a progress dialog
                         ProgressDialog progressDialog = ProgressDialog.show(MainActivity.this, "Please Wait", "Fetching part details...", true);
-                        ApiService.pdaService.pdaGetPartGC(model, partNo,issueNo).enqueue(new Callback<List<MI_Master>>() {
+                        ApiService.pdaService.pdaGetPartGC(model, partNo, issueNo).enqueue(new Callback<List<MI_Master>>() {
                             @Override
                             public void onResponse(Call<List<MI_Master>> call, Response<List<MI_Master>> response) {
                                 progressDialog.dismiss(); // Dismiss the dialog once we have a response
@@ -176,7 +181,7 @@ public class MainActivity extends AppCompatActivity {
                                     txtSTT.setText(mi_Master.getMI_INDEX());
                                     txtViTriCam.setText(mi_Master.getLOCATION_ID());
                                     txtQuyCach.setText(mi_Master.getSPEC());
-                                    txtCount.setText(String.valueOf( mi_Master.getCOUNTOFCHECK()));
+                                    txtCount.setText(String.valueOf(mi_Master.getCOUNTOFCHECK()));
                                     speakResult();
                                     edtPart.setText("");
                                     edtPart.requestFocus();
@@ -223,13 +228,13 @@ public class MainActivity extends AppCompatActivity {
 
                     ProgressDialog progressDialog = ProgressDialog.show(MainActivity.this, "Please Wait", "Insert Issue No...", true);
 
-                    for(int j = 0; j<partItemList.size();j++){
+                    for (int j = 0; j < partItemList.size(); j++) {
                         String partNo = partItemList.get(j).toString();
 
 
-                        ApiService.pdaService.pdaInsertHistory(model,partNo,issueNo).enqueue(new Callback<PdaInsertHistoryResponse>() {
+                        ApiService.pdaService.pdaInsertHistory(model, partNo, issueNo).enqueue(new Callback<PdaInsertHistoryResponse>() {
                             @Override
-                            public void onResponse(Call<PdaInsertHistoryResponse > call, Response<PdaInsertHistoryResponse > response) {
+                            public void onResponse(Call<PdaInsertHistoryResponse> call, Response<PdaInsertHistoryResponse> response) {
                                 progressDialog.dismiss();
 
                                 if (response.isSuccessful() && response.body() != null) {
@@ -241,7 +246,7 @@ public class MainActivity extends AppCompatActivity {
                                     } else if ("ER".equals(pStatus)) {
                                         // Show error message and focus on edtModel
                                         Toast.makeText(MainActivity.this, "Error: Insertion failed", Toast.LENGTH_SHORT).show();
-                                        edtModel.setError("Insert Fail " + partNo  + "at position ");
+                                        edtModel.setError("Insert Fail " + partNo + "at position ");
                                         edtModel.requestFocus();
                                     }
                                 } else {
@@ -253,7 +258,7 @@ public class MainActivity extends AppCompatActivity {
                             }
 
                             @Override
-                            public void onFailure(Call<PdaInsertHistoryResponse > call, Throwable t) {
+                            public void onFailure(Call<PdaInsertHistoryResponse> call, Throwable t) {
 //                                progressDialog.dismiss();
                                 Log.e("API call failed", "Status: " + t.getMessage());
                                 Toast.makeText(MainActivity.this, "API call failed: " + t.getMessage(), Toast.LENGTH_SHORT).show();
@@ -285,6 +290,49 @@ public class MainActivity extends AppCompatActivity {
                 txtTotal.setText("/0");
 
                 edtIssueNo.requestFocus();
+            }
+        });
+
+        btnShow.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String model = edtModel.getText().toString();
+                String issueNo = "0" + edtIssueNo.getText().toString();
+
+                Intent myIntent = new Intent(MainActivity.this, PartNoListActivity.class);
+                ProgressDialog progressDialog = ProgressDialog.show(MainActivity.this, "Please Wait", "Showing PartNo list Not checked...", true);
+
+                ApiService.pdaService.Get_PartNo_NotChecked(model, issueNo).enqueue(new Callback<List<PartItem>>() {
+                    @Override
+                    public void onResponse(Call<List<PartItem>> call, Response<List<PartItem>> response) {
+                        progressDialog.dismiss(); // Dismiss the dialog once we have a response
+
+                        if (response.isSuccessful()) {
+                            List<PartItem> partNoList = response.body();
+                            String jsonList = gson.toJson(partNoList);
+                            if (partNoList != null && !partNoList.isEmpty()) {
+                                //ArrayList<PartItem> parcelablePartNoList = new ArrayList<>(partNoList); // Convert List to ArrayList
+                                Bundle myBundle = new Bundle();
+                                myBundle.putString("list", jsonList);
+                                myIntent.putExtra("myPackage", myBundle);
+                                startActivity(myIntent);
+                            } else {
+                                Toast.makeText(MainActivity.this, "Have no PartNo to check", Toast.LENGTH_SHORT).show();
+                            }
+                        } else {
+                            Toast.makeText(MainActivity.this, "Failed to retrieve data", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<List<PartItem>> call, Throwable t) {
+                        progressDialog.dismiss(); // Dismiss the dialog in case of failure
+                        Log.e("API_ERROR", "API Call Failed: ", t);
+                        Toast.makeText(MainActivity.this, "API Call Failed: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+
+                });
+
             }
         });
 

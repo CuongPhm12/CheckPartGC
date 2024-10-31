@@ -2,6 +2,7 @@ package com.example.checkpartgc.api;
 
 import com.example.checkpartgc.model.ApiResponse;
 import com.example.checkpartgc.model.MI_Master;
+import com.example.checkpartgc.model.PartItem;
 import com.example.checkpartgc.model.PdaInsertHistoryResponse;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -68,6 +69,11 @@ public interface ApiService {
     Call<List<MI_Master>> pdaGetPartGC(@Query("modelId") String modelId,
                                        @Query("partNo") String partNo,
                                        @Query("refNo") String refNo);
+
+    //http://172.28.10.17:5005/Service/PDA_GA_Service.asmx/Get_PartNo_NotChecked?modelId=fm3-k865-000ss01&refNo=0190014591
+    @GET("Service/PDA_GA_Service.asmx/Get_PartNo_NotChecked")
+    Call<List<PartItem>> Get_PartNo_NotChecked(@Query("modelId") String modelId,
+                                               @Query("refNo") String refNo);
 
     // New method for inserting data into the database
     @GET("Service/PDA_GA_Service.asmx/PdaInsertHistory")

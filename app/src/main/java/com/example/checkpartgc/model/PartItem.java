@@ -5,6 +5,8 @@ public class PartItem {
 
     public PartItem(String PART_NO) {
         this.PART_NO = PART_NO;
+
+
     }
 
     public String getPART_NO() {
