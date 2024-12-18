@@ -9,7 +9,7 @@
     tools:context=".PartNoListActivity">
 
     <TextView
-        android:id="@+id/textView"
+        android:id="@+id/txtHeader"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="#3D3D3D"

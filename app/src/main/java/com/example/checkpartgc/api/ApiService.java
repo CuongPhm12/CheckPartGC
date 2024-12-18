@@ -79,5 +79,6 @@ public interface ApiService {
     @GET("Service/PDA_GA_Service.asmx/PdaInsertHistory")
     Call<PdaInsertHistoryResponse> pdaInsertHistory(@Query("model") String model,
                                                     @Query("partNo") String partNo,
-                                                    @Query("refNo") String refNo);
+                                                    @Query("refNo") String refNo,
+                                                    @Query("wo") String wo);
 }

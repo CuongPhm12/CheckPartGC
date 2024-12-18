@@ -38,7 +38,7 @@ import retrofit2.Response;
 public class MainActivity extends AppCompatActivity {
 
     EditText edtIssueNo, edtWO, edtModel, edtPart;
-    TextView txtSTT, txtViTriCam, txtQuyCach, txtResult, txtCount, txtTotal;
+    TextView txtSTT, txtViTriCam, txtQuyCach, txtResult, txtCount, txtTotal,txtHeader;
     Button btnReset, btnExit, btnGenerateSpeech, btnShow;
     ApiService apiService;
     TextToSpeech t1;
@@ -63,10 +63,12 @@ public class MainActivity extends AppCompatActivity {
         txtResult = findViewById(R.id.txtResult);
         txtCount = findViewById(R.id.txtCount);
         txtTotal = findViewById(R.id.txtTotal);
-
+        txtHeader = findViewById(R.id.txtHeader);
         btnReset = findViewById(R.id.btnReset);
         btnExit = findViewById(R.id.btnExit);
         btnShow = findViewById(R.id.btnShow);
+
+        txtHeader.setText("Check Part GC " +"1.03");
 
 
         t1 = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
@@ -154,6 +156,34 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        edtWO.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String barcode = edtWO.getText().toString().trim();
+                String[] result = processString(barcode);
+
+                if (result == null) {
+
+                    Toast.makeText(MainActivity.this, "Error: Not correct format", Toast.LENGTH_SHORT).show();
+                    edtWO.setText("");
+                    edtWO.requestFocus();
+                } else {
+                    edtWO.setText(result[1]);
+                    edtModel.setText(result[0]);
+                    // Trigger the onEditorAction event manually
+                    edtModel.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            edtModel.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER));
+                            edtModel.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_ENTER));
+                        }
+                    });
+                }
+            }
+
+
+        });
+
         edtPart.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
@@ -225,14 +255,15 @@ public class MainActivity extends AppCompatActivity {
                     // Get values from input fields
                     String issueNo = "0" + edtIssueNo.getText().toString();
                     String model = edtModel.getText().toString();
+                    String wo = edtWO.getText().toString();
 
                     ProgressDialog progressDialog = ProgressDialog.show(MainActivity.this, "Please Wait", "Insert Issue No...", true);
 
                     for (int j = 0; j < partItemList.size(); j++) {
-                        String partNo = partItemList.get(j).toString();
+                        String partNo = partItemList.get(j);
 
 
-                        ApiService.pdaService.pdaInsertHistory(model, partNo, issueNo).enqueue(new Callback<PdaInsertHistoryResponse>() {
+                        ApiService.pdaService.pdaInsertHistory(model, partNo, issueNo,wo).enqueue(new Callback<PdaInsertHistoryResponse>() {
                             @Override
                             public void onResponse(Call<PdaInsertHistoryResponse> call, Response<PdaInsertHistoryResponse> response) {
                                 progressDialog.dismiss();
@@ -342,6 +373,24 @@ public class MainActivity extends AppCompatActivity {
                 finish();
             }
         });
+    }
+
+    private String[] processString(String barcode) {
+        // Check if the input string contains the '|' delimiter
+        if (!barcode.contains("|")) {
+            return null; // Not correct format
+        }
+
+        // Split the string into two parts
+        String[] parts = barcode.split("\\|");
+
+
+        // Validate the second part: must be 10 characters long and contain only digits
+        if (parts.length < 2 || parts[1].length() != 10 || !parts[1].matches("\\d{10}")) {
+            return null; // Not correct format
+        }
+
+        return parts; // Return the two parts if format is correct
     }
 
 
