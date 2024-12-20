@@ -3,6 +3,7 @@ package com.example.checkpartgc.api;
 import com.example.checkpartgc.model.ApiResponse;
 import com.example.checkpartgc.model.MI_Master;
 import com.example.checkpartgc.model.PartItem;
+import com.example.checkpartgc.model.PartItem_ver_new_1;
 import com.example.checkpartgc.model.PdaInsertHistoryResponse;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -13,6 +14,7 @@ import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.http.GET;
+import retrofit2.http.Path;
 import retrofit2.http.Query;
 
 public interface ApiService {
@@ -57,6 +59,17 @@ public interface ApiService {
     Call<List<String>> GetPartByIssueNo (@Query("issueNo") String issueNo);
 
 
+    //API for Usap get Part and Qty
+    //http://172.28.10.17:9998/Usap/WHCMASM/issue_no=0196429699
+    ApiService apiService_GetPartAndQtyByIssueNo = new Retrofit.Builder()
+            .baseUrl("http://172.28.10.17:9998/")
+            .addConverterFactory(GsonConverterFactory.create(gson))
+            .build()
+            .create(ApiService.class);
+
+    @GET("Usap/WHCMASM/issue_no={issueNo}")
+    Call<List<PartItem_ver_new_1>> GetPartAndQtyByIssueNo (@Path("issueNo") String issueNo);
+
     //API for PDA_GA_Service
     //http://172.28.10.17:5005/Service/PDA_GA_Service.asmx/PdaGetPartGC?modelId=FM1-X946-000SS01&partNo=WB8-5234-000
     ApiService pdaService = new Retrofit.Builder()
@@ -81,4 +94,12 @@ public interface ApiService {
                                                     @Query("partNo") String partNo,
                                                     @Query("refNo") String refNo,
                                                     @Query("wo") String wo);
+
+    // New method for inserting data into the database
+    @GET("Service/PDA_GA_Service.asmx/PdaInsertHistory_ver_new_1")
+    Call<PdaInsertHistoryResponse> PdaInsertHistory_ver_new_1(@Query("model") String model,
+                                                    @Query("partNo") String partNo,
+                                                    @Query("refNo") String refNo,
+                                                    @Query("wo") String wo,
+                                                    @Query("qty") int qty);
 }

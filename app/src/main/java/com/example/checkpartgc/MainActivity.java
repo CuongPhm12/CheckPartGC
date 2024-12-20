@@ -23,6 +23,7 @@ import com.example.checkpartgc.api.ApiService;
 import com.example.checkpartgc.model.ApiResponse;
 import com.example.checkpartgc.model.MI_Master;
 import com.example.checkpartgc.model.PartItem;
+import com.example.checkpartgc.model.PartItem_ver_new_1;
 import com.example.checkpartgc.model.PdaInsertHistoryResponse;
 
 import java.io.IOException;
@@ -38,12 +39,13 @@ import retrofit2.Response;
 public class MainActivity extends AppCompatActivity {
 
     EditText edtIssueNo, edtWO, edtModel, edtPart;
-    TextView txtSTT, txtViTriCam, txtQuyCach, txtResult, txtCount, txtTotal,txtHeader;
+    TextView txtSTT, txtViTriCam, txtQuyCach, txtResult, txtCount, txtTotal, txtHeader;
     Button btnReset, btnExit, btnGenerateSpeech, btnShow;
     ApiService apiService;
     TextToSpeech t1;
     private boolean isTtsReady = false;  // Flag to check if TTS is ready
-    List<String> partItemList;
+//    List<String> partItemList;
+    List<PartItem_ver_new_1> partItemAndQtyList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,7 +70,7 @@ public class MainActivity extends AppCompatActivity {
         btnExit = findViewById(R.id.btnExit);
         btnShow = findViewById(R.id.btnShow);
 
-        txtHeader.setText("Check Part GC " +"1.03");
+        txtHeader.setText("Check Part GC " + "1.04");
 
 
         t1 = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
@@ -110,15 +112,61 @@ public class MainActivity extends AppCompatActivity {
 //                        return false;}
 
                     ProgressDialog progressDialog = ProgressDialog.show(MainActivity.this, "Please Wait", "Checking Issue No...", true);
-                    ApiService.apiService_GetPartByIssueNo.GetPartByIssueNo(issueNo).enqueue(new Callback<List<String>>() {
+//                    ApiService.apiService_GetPartByIssueNo.GetPartByIssueNo(issueNo).enqueue(new Callback<List<String>>() {
+//                        @Override
+//                        public void onResponse(Call<List<String>> call, Response<List<String>> response) {
+//
+//                            progressDialog.dismiss();
+//                            if (response.isSuccessful() && response.body() != null) {
+//                                partItemList = response.body();
+//                                if (!partItemList.isEmpty()) {
+//                                    txtTotal.setText("/" + String.valueOf(partItemList.size()));
+//                                } else {
+//                                    Toast.makeText(MainActivity.this, "Issue No Not Found", Toast.LENGTH_SHORT).show();
+//                                    txtTotal.setText("/0");
+//                                    edtIssueNo.requestFocus();
+//
+//                                }
+//                            } else {
+//                                // Extract detailed error message for debugging
+//                                String errorMessage = "No error message";
+//                                try {
+//                                    if (response.errorBody() != null) {
+//                                        errorMessage = response.errorBody().string(); // Read the error message from response
+//                                    }
+//                                } catch (IOException e) {
+//                                    e.printStackTrace();
+//                                }
+//
+//                                Log.e("API_ERROR", "Response failed. Status code: " + response.code() + ", Error: " + errorMessage);
+//                                Toast.makeText(MainActivity.this, "Error: Invalid response. Status code: " + response.code(), Toast.LENGTH_SHORT).show();
+//                            }
+//                        }
+//
+//                        @Override
+//                        public void onFailure(Call<List<String>> call, Throwable t) {
+//                            progressDialog.dismiss(); // Dismiss the dialog in case of failure
+//                            // Log the error message for debugging
+//                            Log.e("API_ERROR", "API Call Failed: ", t);
+//                            Toast.makeText(MainActivity.this, "Call API Failed: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+//                        }
+//                    });
+
+                    ApiService.apiService_GetPartAndQtyByIssueNo.GetPartAndQtyByIssueNo(issueNo).enqueue(new Callback<List<PartItem_ver_new_1>>()
+                    {
                         @Override
-                        public void onResponse(Call<List<String>> call, Response<List<String>> response) {
+                        public void onResponse(Call<List<PartItem_ver_new_1>> call, Response<List<PartItem_ver_new_1>> response) {
 
                             progressDialog.dismiss();
                             if (response.isSuccessful() && response.body() != null) {
-                                partItemList = response.body();
-                                if (!partItemList.isEmpty()) {
-                                    txtTotal.setText("/" + String.valueOf(partItemList.size()));
+                                partItemAndQtyList = response.body();
+//                                if (!partItemAndQtyList.isEmpty()) {
+//                                    for (int i = 0; i < partItemAndQtyList.size(); i++) {
+//                                        partItemList.add(partItemAndQtyList.get(i).getPART_NO());
+//                                    }
+//                                }
+                                if (!partItemAndQtyList.isEmpty()) {
+                                    txtTotal.setText("/" + String.valueOf(partItemAndQtyList.size()));
                                 } else {
                                     Toast.makeText(MainActivity.this, "Issue No Not Found", Toast.LENGTH_SHORT).show();
                                     txtTotal.setText("/0");
@@ -142,7 +190,7 @@ public class MainActivity extends AppCompatActivity {
                         }
 
                         @Override
-                        public void onFailure(Call<List<String>> call, Throwable t) {
+                        public void onFailure(Call<List<PartItem_ver_new_1>> call, Throwable t) {
                             progressDialog.dismiss(); // Dismiss the dialog in case of failure
                             // Log the error message for debugging
                             Log.e("API_ERROR", "API Call Failed: ", t);
@@ -248,6 +296,62 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+//        edtModel.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+//            @Override
+//            public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
+//                if (keyEvent != null && (keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER) || i == EditorInfo.IME_ACTION_DONE) {
+//                    // Get values from input fields
+//                    String issueNo = "0" + edtIssueNo.getText().toString();
+//                    String model = edtModel.getText().toString();
+//                    String wo = edtWO.getText().toString();
+//
+//                    ProgressDialog progressDialog = ProgressDialog.show(MainActivity.this, "Please Wait", "Insert Issue No...", true);
+//
+//                    for (int j = 0; j < partItemList.size(); j++) {
+//                        String partNo = partItemList.get(j);
+//
+//
+//                        ApiService.pdaService.pdaInsertHistory(model, partNo, issueNo, wo).enqueue(new Callback<PdaInsertHistoryResponse>() {
+//                            @Override
+//                            public void onResponse(Call<PdaInsertHistoryResponse> call, Response<PdaInsertHistoryResponse> response) {
+//                                progressDialog.dismiss();
+//
+//                                if (response.isSuccessful() && response.body() != null) {
+//                                    String pStatus = response.body().getpStatus();
+//
+//                                    if ("OK".equals(pStatus) || "ER_DUPLICATE".equals(pStatus)) {
+//                                        // Save log or show success message
+//                                        Log.e("InsertHistory", "Status: " + pStatus);
+//                                    } else if ("ER".equals(pStatus)) {
+//                                        // Show error message and focus on edtModel
+//                                        Toast.makeText(MainActivity.this, "Error: Insertion failed", Toast.LENGTH_SHORT).show();
+//                                        edtModel.setError("Insert Fail " + partNo + "at position ");
+//                                        edtModel.requestFocus();
+//                                    }
+//                                } else {
+//                                    Toast.makeText(MainActivity.this, "Error: Invalid response from server", Toast.LENGTH_SHORT).show();
+//                                    edtModel.setError("Invalid response from server");
+//                                    edtModel.requestFocus();
+//                                }
+//
+//                            }
+//
+//                            @Override
+//                            public void onFailure(Call<PdaInsertHistoryResponse> call, Throwable t) {
+////                                progressDialog.dismiss();
+//                                Log.e("API call failed", "Status: " + t.getMessage());
+//                                Toast.makeText(MainActivity.this, "API call failed: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+//                                edtModel.setError("API call failed");
+//                                edtModel.requestFocus();
+//
+//                            }
+//                        });
+//                    }
+//
+//                }
+//                return false;
+//            }
+//        });
         edtModel.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
@@ -259,11 +363,12 @@ public class MainActivity extends AppCompatActivity {
 
                     ProgressDialog progressDialog = ProgressDialog.show(MainActivity.this, "Please Wait", "Insert Issue No...", true);
 
-                    for (int j = 0; j < partItemList.size(); j++) {
-                        String partNo = partItemList.get(j);
+                    for (int j = 0; j < partItemAndQtyList.size(); j++) {
+                        String partNo = partItemAndQtyList.get(j).getPART_NO();
+                        int qty = (int)partItemAndQtyList.get(j).getQTY();
 
 
-                        ApiService.pdaService.pdaInsertHistory(model, partNo, issueNo,wo).enqueue(new Callback<PdaInsertHistoryResponse>() {
+                        ApiService.pdaService.PdaInsertHistory_ver_new_1(model, partNo, issueNo, wo,qty).enqueue(new Callback<PdaInsertHistoryResponse>() {
                             @Override
                             public void onResponse(Call<PdaInsertHistoryResponse> call, Response<PdaInsertHistoryResponse> response) {
                                 progressDialog.dismiss();
@@ -304,7 +409,6 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
         });
-
         btnReset.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
