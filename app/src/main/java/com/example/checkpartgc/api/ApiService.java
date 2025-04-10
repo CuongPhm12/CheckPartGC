@@ -1,10 +1,10 @@
 package com.example.checkpartgc.api;
 
-import com.example.checkpartgc.model.ApiResponse;
 import com.example.checkpartgc.model.MI_Master;
 import com.example.checkpartgc.model.PartItem;
 import com.example.checkpartgc.model.PartItem_ver_new_1;
 import com.example.checkpartgc.model.PdaInsertHistoryResponse;
+import com.example.checkpartgc.model.CommonResponse;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -56,7 +56,7 @@ public interface ApiService {
             .create(ApiService.class);
 
     @GET("Usap/GetPartByIssueNo")
-    Call<List<String>> GetPartByIssueNo (@Query("issueNo") String issueNo);
+    Call<List<String>> GetPartByIssueNo(@Query("issueNo") String issueNo);
 
 
     //API for Usap get Part and Qty
@@ -68,7 +68,7 @@ public interface ApiService {
             .create(ApiService.class);
 
     @GET("Usap/WHCMASM/issue_no={issueNo}")
-    Call<List<PartItem_ver_new_1>> GetPartAndQtyByIssueNo (@Path("issueNo") String issueNo);
+    Call<List<PartItem_ver_new_1>> GetPartAndQtyByIssueNo(@Path("issueNo") String issueNo);
 
     //API for PDA_GA_Service
     //http://172.28.10.17:5005/Service/PDA_GA_Service.asmx/PdaGetPartGC?modelId=FM1-X946-000SS01&partNo=WB8-5234-000
@@ -95,11 +95,26 @@ public interface ApiService {
                                                     @Query("refNo") String refNo,
                                                     @Query("wo") String wo);
 
+
+    @GET("Service/PDA_GA_Service.asmx/checkCorrectMachineNo")
+    Call<CommonResponse> checkCorrectMachineNo(@Query("partNo") String partNo,
+                                               @Query("location") String location,
+                                               @Query("machineNo") String machineNo);
+
+    @GET("Service/PDA_GA_Service.asmx/insertTblCheckMachineIDHistory")
+    Call<CommonResponse> insertTblCheckMachineIDHistory(@Query("partNo") String partNo,
+                                                        @Query("location") String location,
+                                                        @Query("machine") String machine,
+                                                        @Query("model") String model,
+                                                        @Query("wo") String wo,
+                                                        @Query("status") String status
+    );
+
     // New method for inserting data into the database
     @GET("Service/PDA_GA_Service.asmx/PdaInsertHistory_ver_new_1")
     Call<PdaInsertHistoryResponse> PdaInsertHistory_ver_new_1(@Query("model") String model,
-                                                    @Query("partNo") String partNo,
-                                                    @Query("refNo") String refNo,
-                                                    @Query("wo") String wo,
-                                                    @Query("qty") int qty);
+                                                              @Query("partNo") String partNo,
+                                                              @Query("refNo") String refNo,
+                                                              @Query("wo") String wo,
+                                                              @Query("qty") int qty);
 }

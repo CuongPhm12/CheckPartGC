@@ -44,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
     ApiService apiService;
     TextToSpeech t1;
     private boolean isTtsReady = false;  // Flag to check if TTS is ready
-//    List<String> partItemList;
+
     List<PartItem_ver_new_1> partItemAndQtyList;
 
     @Override
@@ -110,7 +110,6 @@ public class MainActivity extends AppCompatActivity {
                     String issueNo = "0" + edtIssueNo.getText().toString();
 //                    if (issueNo.length() >= 3 && !issueNo.substring(0, 3).equals("018")){
 //                        return false;}
-
                     ProgressDialog progressDialog = ProgressDialog.show(MainActivity.this, "Please Wait", "Checking Issue No...", true);
 //                    ApiService.apiService_GetPartByIssueNo.GetPartByIssueNo(issueNo).enqueue(new Callback<List<String>>() {
 //                        @Override
@@ -238,7 +237,13 @@ public class MainActivity extends AppCompatActivity {
                 if (keyEvent != null && (keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER) || i == EditorInfo.IME_ACTION_DONE) {
                     // Get values from input fields
                     String partNo = edtPart.getText().toString();
+
                     String issueNo = "0" + edtIssueNo.getText().toString();
+                    if(issueNo.length()!=10){
+                        Toast.makeText(MainActivity.this, "Issue No Not Found", Toast.LENGTH_SHORT).show();
+                        edtIssueNo.requestFocus();
+                        return false;
+                    }
                     String model = edtModel.getText().toString();
 
                     if (validateInput(partNo, issueNo, model)) {
